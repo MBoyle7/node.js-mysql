@@ -10,37 +10,59 @@ const connection = mysql.createConnection({
 });
 
 connection.connect(function(err){
-    if(err){
-    console.log('Error connecting to bamazonDB');
-    return;
-    }
-    console.log('Connected');
+    if(err) throw err;
+    console.log("Connected!");
+    makeTable();
+})
 
-    beginApp();
-});
-
-// Function to start the app
-const beginApp = function(){
-    connection.query("SELECT * FROM Products", function(err, result) {
-        if (err) throw err;
-        return (getBamazonProducts(result));
-      
-      });
+const makeTable = () => {
+    connection.query("SELECT * FROM products", function(err,res){
+        for(var i=0; i < res.length; i++){
+            console.log(res[i].itemId + " || " + res[i].productName + " || " +
+                        res[i].categoryName + " || " + res[i].price + "|| " +
+                        res[i].productQuantity + "\n");
+        }
+    askCustomer(res);
+    })
 }
 
-// Function to display all of the products available for sale in a table
-const getBamazonProducts = function (Products){
-    console.log("Welcome to Bamazon!");
-    for (var i = 0; i < Products.length; i++) {
-        const productsResults = "\r\n"+
-        "ItemID: " + Products[i].itemId+"\r\n"+
-        "Product Description: " + Products[i].productName+"\r\n"+
-        "Department: " + Products[i].categoryName+"\r\n"+
-        "Price: $ "+ Products[i].price+"\r\n"+
-        "Current Stock: " + Products[i].productQuantity;
-        console.log(productsResults);
-    }
-    
+const askCustomer = function(res){
+    inquirer.prompt([{
+        type: 'input',
+        name: 'choice',
+        message: 'What would you like to buy!?'
+    }]).then(function(answer){
+        var correct = false;
+        for(var i=0; i < res.length; i++){
+            if(res[i].productName == answer.choice){
+                correct = true;
+                var product = answer.choice;
+                var id = i;
+                inquirer.prompt({
+                    type: 'input',
+                    name: 'quant',
+                    message: 'How many would you like to purchase?',
+                    validate: function(value){
+                        if(isNaN(value)==false){
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                }).then(function(answer){
+                    if((res[id].productQuantity-answer.quant) > 0){
+                        connection.query(" 'UPDATE Products SET productQuantity=' " + (res[id].productQuantity-answer.quant) +
+                        " 'WHERE productName=' " + product + "'",
+                        function(err, res2){
+                            console.log("Product successfully purchased! Your total is " + res[id].price*answer.quant + " Dollars");
+                            makeTable();
+                        })
+                    } else {
+                        console.log("Not a valid purchase.");
+                        askCustomer(res);
+                    }
+                })
+            }
+        }
+    })
 }
-
-const

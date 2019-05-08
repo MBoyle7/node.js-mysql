@@ -1,6 +1,6 @@
 CREATE DATABASE bamazonDB;
 USE bamazonDB;
-CREATE TABLE Products (itemId int AUTO_INCREMENT, productName varchar(99) NOT NULL, categoryName varchar(50) NOT NULL, price varchar(25) NOT NULL, productQuantity int NOT NULL, PRIMARY KEY(itemId) );
+CREATE TABLE Products (itemId integer auto_increment not null, productName varchar(99) NOT NULL, categoryName varchar(50) NOT NULL, price integer(10,4) NOT NULL, productQuantity integer(10) NOT NULL, PRIMARY KEY(itemId) );
 describe Products;
 select * from Products;
 INSERT INTO Products (productName, categoryName, price, productQuantity) VALUES ("2007 Jeep Grand Cherokee", "Automobiles", 30000.00, 5);
